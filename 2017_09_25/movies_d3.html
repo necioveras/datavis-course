@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Carregando dados de arquivo</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+
+<body>
+	<hr/>
+    <div id="chart_gross"></div>
+    <hr/>
+    <div id="chart_budget"></div>
+    <hr/>
+    <div id="chart_profit"></div>
+    <hr/>
+    <div id="chart_gross_genre"></div>
+
+    <!--  Gráfico de barras - Bilheteria  -->
+
+    <script type="text/javascript">
+        function render_gross(data, comparator) {
+            d3.select("#chart_gross").selectAll("div.h-bar")
+                    .data(data)
+                .enter().append("div")
+                .attr("class", "h-bar")
+                .append("span");
+            
+            d3.select("#chart_gross").selectAll("div.h-bar")
+                    .data(data)
+                .attr("class", "h-bar")
+                .style("width", function (d) {
+                    return (d.Worldwide_Gross_M/3) + "px";
+                })
+                .select("span")
+                    .text(function (d) {
+                        return d.Film;
+                    });
+
+            if(comparator)
+            d3.select("body")
+        		.select("#chart_gross")
+                .selectAll("div.h-bar") 
+                .sort(comparator);
+        }
+
+        var compareToWorldwide_Gross_M = function (a, b) { 
+        	return a.Worldwide_Gross_M > b.Worldwide_Gross_M?-1:1;
+    	};
+        
+        d3.json("movies.json", function(error, json){ 
+            d3.select("#chart_gross")
+            	.append("h1")
+            	.attr("align", "center")
+            	.append("font")
+            	.attr("color", "red")
+            	.text("Ranking de bilheteria por filmes.");
+            render_gross(json, compareToWorldwide_Gross_M);
+        });
+    </script>
+
+    <!--  Gráfico de barras - Custo  -->
+
+    <script type="text/javascript">
+        function render_budget(data, comparator) {
+            d3.select("#chart_budget").selectAll("div.h-bar2")
+                    .data(data)
+                .enter().append("div")
+                .attr("class", "h-bar2")
+                .append("span");
+            
+            d3.select("#chart_budget").selectAll("div.h-bar2")
+                    .data(data)
+                .attr("class", "h-bar2")
+                .style("width", function (d) {
+                    return (d.Budget_M*3) + "px";
+                })
+                .select("span")
+                    .text(function (d) {
+                        return d.Film;
+                    });
+
+            if(comparator)
+            d3.select("body")
+        		.select("#chart_budget")
+                .selectAll("div.h-bar2") 
+                .sort(comparator);
+        }
+
+        var compareToBudget_M = function (a, b) { 
+        	return a.Budget_M > b.Budget_M?-1:1;
+    	};
+        
+        d3.json("movies.json", function(error, json){ 
+            d3.select("#chart_budget")
+            	.append("h1")
+            	.attr("align", "center")
+            	.append("font")
+            	.attr("color", "red")
+            	.text("Lista de filmes organizados por valor de orçamento.");
+            render_budget(json, compareToBudget_M);
+        });
+    </script>
+
+    <!--  Gráfico de barras - Lucro  -->
+
+    <script type="text/javascript">
+        function render_profit(data, comparator) {
+            d3.select("#chart_profit").selectAll("div.h-bar3")
+                    .data(data)
+                .enter().append("div")
+                .attr("class", "h-bar3")
+                .append("span");
+            
+            d3.select("#chart_profit").selectAll("div.h-bar3")
+                    .data(data)
+                .attr("class", "h-bar3")
+                .style("width", function (d) {
+                    return ((d.Worldwide_Gross_M - d.Budget_M)/2-20) + "px";
+                })
+                .select("span")
+                    .text(function (d) {
+                        return d.Film;
+                    });
+
+            if(comparator)
+            d3.select("body")
+        		.select("#chart_profit")
+                .selectAll("div.h-bar3") 
+                .sort(comparator);
+        }
+
+        var compareToProfit = function (a, b) { 
+        	return (a.Worldwide_Gross_M - a.Budget_M) > (b.Worldwide_Gross_M - b.Budget_M)?-1:1;
+    	};
+        
+        d3.json("movies.json", function(error, json){ 
+            d3.select("#chart_profit")
+            	.append("h1")
+            	.attr("align", "center")
+            	.append("font")
+            	.attr("color", "red")
+            	.text("Lucratividade de filmes.");
+            render_profit(json, compareToProfit);
+        });
+    </script>
+
+    <!--  Gráfico de barras - Bilheteria por Gênero  -->
+
+    <script type="text/javascript">
+        function render_gross_genre(data, comparator) {
+            var nested_data = d3.nest()
+				.key(function(d) { return d.Genre})
+				.rollup(function(leaves) { return {"value": leaves.Worldwide_Gross_M, "sum": d3.sum(leaves, function(d) {return parseFloat(d.Worldwide_Gross_M);})} })
+				.entries(data);
+            
+
+            d3.select("#chart_gross_genre").selectAll("div.h-bar4")
+                    .data(nested_data)
+                .enter().append("div")
+                .attr("class", "h-bar4")
+                .append("span");
+           
+            d3.select("#chart_gross_genre").selectAll("div.h-bar4")
+                    .data(nested_data)
+                .attr("class", "h-bar4")
+                .style("width", function (d) {
+                    return d.value.sum/10 + "px";
+                })
+                .select("span")
+                    .text(function (d) {
+                        return d.key;
+                    });
+
+            if(comparator)
+            d3.select("body")
+        		.select("#chart_gross_genre")
+                .selectAll("div.h-bar4") 
+                .sort(comparator);
+        }
+
+        var compareToWorldwide_Gross_M_Genre = function (a, b) { 
+        	return a.value.sum > b.value.sum?-1:1;
+    	};
+        
+        d3.json("movies.json", function(error, json){ 
+            d3.select("#chart_gross_genre")
+            	.append("h1")
+            	.attr("align", "center")
+            	.append("font")
+            	.attr("color", "red")
+            	.text("Ranking de bilheteria por gênero de filme.");
+            render_gross_genre(json, compareToWorldwide_Gross_M_Genre);
+        });
+    </script>
+    
+
+</body>
+</html>
