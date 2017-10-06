@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Carregando dados de arquivo</title>
+    <link rel="stylesheet" href="css/dc.css">
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="js/crossfilter.js" charset="utf-8"></script>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="js/dc.js" charset="utf-8"></script>
+</head>
+
+<body>
+    <hr/>
+    <h1> Total apurado em biblheterias (por ano) </h1>
+    <div id="chart"></div>
+    <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+    <br/><br/><br/><br/><br/><br/><br/><br/><br/>
+    <h1> Total apurado em biblheterias (por gênero) </h1>
+    <div id="chartGenre"></div>
+	
+
+    <!--  Gráfico de barras - Bilheteria  -->
+
+    <script type="text/javascript">
+      var chart = dc.barChart("#chart");
+	
+	  d3.json("movies.json", function(error, data) {
+	  data.forEach(function(d) {
+	    d.Worldwide_Gross_M = +d.Worldwide_Gross_M;
+	  });
+
+	  var facts               = crossfilter(data),
+	      yearDimension       = facts.dimension(function(d) {return d.Year;}),
+	      yearSumGroup        = yearDimension.group().reduceSum(function(d) {return d.Worldwide_Gross_M;});
+	  
+	  chart
+	    .width(800)
+	    .height(400)
+	    .x(d3.scale.ordinal())
+	    .xUnits(dc.units.ordinal)
+	    .brushOn(true)
+	    .yAxisLabel("", 20)
+	    .barPadding(0.4)
+	    .dimension(yearDimension)
+	    .group(yearSumGroup)
+	    .controlsUseVisibility(false)
+	    .on('pretransition', function(chart) {
+	        chart.selectAll("rect.bar").on("click", function (d) {
+	        	chart.filter(null)
+                .filter(d.data.key)
+                .redrawGroup();
+	        });
+	    });
+	    chart.render();
+	});
+
+
+	  var chartGenre = dc.barChart("#chartGenre");
+	
+	  d3.json("movies.json", function(error, data) {
+	  data.forEach(function(d) {
+	    d.Worldwide_Gross_M = +d.Worldwide_Gross_M;
+	  });
+
+	  var factsGenre           = crossfilter(data),
+	      genreDimension       = factsGenre.dimension(function(d) {return d.Genre;}),
+	      genreSumGroup        = genreDimension.group().reduceSum(function(d) {return d.Worldwide_Gross_M;});
+	  
+	  chartGenre
+	    .width(800)
+	    .height(400)
+	    .x(d3.scale.ordinal())
+	    .xUnits(dc.units.ordinal)
+	    .brushOn(true)
+	    .yAxisLabel("", 20)
+	    .barPadding(0.4)
+	    .dimension(genreDimension)
+	    .group(genreSumGroup)
+	    .controlsUseVisibility(false)
+	    .on('pretransition', function(chartGenre) {
+	        chartGenre.selectAll("rect.bar").on("click", function (d) {
+	        	chartGenre.filter(null)
+                .filter(d.data.key)
+                .redrawGroup();
+	        });
+	    });
+	    chartGenre.render();
+	    dc.renderAll();
+	});
+    </script>
+
+
+</body>
+</html>
