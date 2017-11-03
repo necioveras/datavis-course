@@ -47,6 +47,32 @@ function Network() {
     return count;
   }
 
+  var maxEdge = function (data) {
+    var max = 0;
+    var value = 0;
+    data.nodes.forEach(function(n) {
+        value = countEdges(data, n.id);
+        if (value > max){
+          max = value;
+        }
+      });
+        
+    return max;
+  }
+
+  var minEdge = function (data) {
+    var min = maxEdge(data);
+    var value = 0;
+    data.nodes.forEach(function(n) {
+        value = countEdges(data, n.id);
+        if (value < min){
+          min = value;
+        }
+      });
+        
+    return min;
+  }
+
   function setupData(data) {
     //First let's randomly dispose data.nodes (x/y) within the the width/height
     // of the visualization and set a fixed radius for now
@@ -65,7 +91,8 @@ function Network() {
         //n.radius = circleRadius(countEdges(data, n.id));
         n.radius = countEdges(data, n.id);
 
-        n.scaleRadius = d3.scale.sqrt().domain([1,36]).range([5,15]);
+        n.scaleRadius = d3.scale.linear().domain([minEdge(data),maxEdge(data)])
+          .range([5,15]);
         //console.log("sacle = " + scaleRadius(n.radius));
 
       });
